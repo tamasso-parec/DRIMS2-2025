@@ -20,4 +20,4 @@ else
     echo "Container $CONTAINER_NAME does not exist."
 fi
 
-docker run -it --privileged -v /dev:/dev --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --net=host --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="$(pwd)/data:/data"  --name drims2 smentasti/drims2  
+docker run  --privileged -v /dev:/dev --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --net=host --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="$(pwd)/data:/data"  --name drims2 smentasti/drims2  /check_script.sh

@@ -1,3 +1,3 @@
 #!/bin/bash
-docker build -t smentasti/drims2 .
+docker buildx build --platform linux/amd64,linux/arm64  -t smentasti/drims2 --push . 
 
