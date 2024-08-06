@@ -32,10 +32,10 @@ The `check.sh` script is a simple script that starts the container and performs 
 ## Windows/MacOS
 ROS can work inside docker on Windows and MacOS. Unfortunatly USB and network interfaces are not properly mapped from outside the docker container to inside the container. Therefore if you are not running an Ubuntu system you will require a virtual machine.
 1. Follow the instructions on the Ubuntu website to [configure Virtualbox ](https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox#1-overview)
-2. Follow the above steps, like if you were using Ubuntu:
-  - install docker 
-  - clone the repository 
-  - run the check script
+2. Once your Ubuntu Virtualbox is running, follow the above steps, like if you were using Ubuntu:
+	  - install docker
+	  - clone the repository
+	  - run the check script
 2. Once you have created the ubuntu virtualbox and installed all the required software you might want to enable bridged network to comunicate with other devices on the same network. To do so go to Settings->Network and select Bridged Network on the drop-down meny for you network interface
 3. When you will start using real cameras for algorithm testing you will also want to enable the usb ports. To do so follow the [Luxonis Camera guide](https://docs.luxonis.com/software/depthai/manual-install/#Manual%20DepthAI%20installation-Installing%20dependencies-VirtualBox)
 
