@@ -8,6 +8,13 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Check if /drims_ws exists
+if [ -f /drims_ws/.placeholder ]; then
+    echo "drims ws exists"
+else
+    echo "drims ws does not exist"
+fi
+
 # Check if ROS is installed
 if command_exists rospack; then
     echo "ROS installed"

@@ -1,0 +1,9 @@
+# Ignore build folder
+drims_ws/build/
+
+# Ignore devel folder
+drims_ws/devel/
+
+# Ignore system specific CMakeLists.txt file
+drims_ws/src/CMakeLists.txt
+drims_ws/.catkin_workspace

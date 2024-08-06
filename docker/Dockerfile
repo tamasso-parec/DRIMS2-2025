@@ -45,10 +45,13 @@ RUN mkdir -p /home/drims/catkin_ws/src \
 # Build the ROS workspace
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
 
- 
+# Environments sources 
 RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> ~/.bashrc
+RUN echo "source /drims_ws/devel/setup.bash" >> ~/.bashrc
 
+# Add the check script
 COPY check_script.sh /check_script.sh
 RUN chmod +x check_script.sh
 
+# Letsgo
 CMD ["bash"]
