@@ -37,6 +37,24 @@ RUN git clone https://github.com/pocoproject/poco.git /tmp/poco \
  && cp /usr/local/lib/*Poco* /usr/lib \
  && rm -rf /tmp/poco
 
+# Set the group name and GID
+ARG GROUP_NAME=drims2
+ARG GROUP_ID=42042
+ARG USER_NAME=drims
+ARG USER_ID=1001
+
+# Create the group and user 
+RUN useradd -ms /bin/bash drims && \
+    echo "drims:drims" | chpasswd
+    
+RUN groupadd -g $GROUP_ID $GROUP_NAME 
+
+# Add the user 'drims' to the created group
+RUN usermod -aG $GROUP_NAME drims    
+
+RUN mkdir /home/drims/drims_ws \
+  && chown -R drims:drims2 /home/drims/drims_ws
+    
 # Clone the ABB Omnicore ROS Driver repository and build it
 RUN mkdir -p /home/drims/catkin_ws/src \
  && cd /home/drims/catkin_ws/src \
@@ -46,8 +64,8 @@ RUN mkdir -p /home/drims/catkin_ws/src \
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
 
 # Environments sources 
-RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> ~/.bashrc
-RUN echo "source /drims_ws/devel/setup.bash" >> ~/.bashrc
+RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
+RUN echo "source /home/drims/drims_ws/devel/setup.bash --extend" >> /home/drims/.bashrc
 
 # Add the check script
 COPY check_script.sh /check_script.sh
