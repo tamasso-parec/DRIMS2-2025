@@ -33,4 +33,8 @@ else
     echo "User $USER is already a member of group $GROUP_NAME."
 fi
 
+# Change the group owner of the folders drims_ws and bags to drims2
+echo "Changing group ownership of directories drims_ws and bags to $GROUP_NAME..."
+sudo chgrp -R $GROUP_NAME "$PWD/drims_ws" "$PWD/bags"
+
 echo "Script execution completed."
