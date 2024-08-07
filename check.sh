@@ -25,5 +25,5 @@ else
     echo "Container $CONTAINER_NAME does not exist."
 fi
 
-docker run --privileged -v /dev:/dev --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --net=host --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="$(pwd)/drims_ws:/drims_ws" --name drims2 $IMAGE_NAME /check_script.sh
+docker run -it  --user drims -v /dev:/dev -v /dev/bus/usb:/dev/bus/usb --device=/dev/bus/usb --device-cgroup-rule='c 189:* rmw'  -v /etc/udev/rules.d:/etc/udev/rules.d --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --net=host --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="$(pwd)/drims_ws:/home/drims/drims_ws" --volume="$(pwd)/bags:/bags"  --name drims2 -w /home/drims $IMAGE_NAME /check_script.sh
 

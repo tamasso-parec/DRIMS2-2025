@@ -9,7 +9,7 @@ command_exists() {
 }
 
 # Check if /drims_ws exists
-if [ -f /drims_ws/.placeholder ]; then
+if [ -f /home/drims/drims_ws/.placeholder ]; then
     echo "drims ws exists"
 else
     echo "drims ws does not exist"
