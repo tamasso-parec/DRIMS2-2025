@@ -2,6 +2,11 @@
 
 # Specify the container name
 CONTAINER_NAME="drims2"
+IMAGE_NAME="smentasti/drims2"
+
+# Pull the latest image
+echo "Pulling the latest image: $IMAGE_NAME..."
+docker pull $IMAGE_NAME
 
 # Check if the container exists
 if docker ps -a | grep -q $CONTAINER_NAME; then
@@ -20,4 +25,5 @@ else
     echo "Container $CONTAINER_NAME does not exist."
 fi
 
-docker run -it --privileged -v /dev:/dev --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --net=host --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="$(pwd)/drims_ws:/drims_ws" --volume="$(pwd)/bags:/bags"  --name drims2 smentasti/drims2  
+docker run -it  --user drims -v /dev:/dev -v /dev/bus/usb:/dev/bus/usb --device=/dev/bus/usb --device-cgroup-rule='c 189:* rmw'  -v /etc/udev/rules.d:/etc/udev/rules.d --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --net=host --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="$(pwd)/drims_ws:/home/drims/drims_ws" --volume="$(pwd)/bags:/bags"  --name drims2 -w /home/drims $IMAGE_NAME
+
