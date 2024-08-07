@@ -1,0 +1,4 @@
+<launch>
+    <!-- Launch the example_img node from the example_img package -->
+    <node pkg="example_img" type="example_img" name="example_img_node" output="screen"/>
+</launch>
