@@ -62,3 +62,27 @@ For VS-code:
 4. A list of running containers will appear. Select the container you want to connect to.
 5. VS Code will then attach to the selected container and open a new VS Code window connected to that container.
 6. You can also install the c++ and ros extensions of vs code to have autocomplete and errors hilights 
+
+## GUIs
+Docker is primarily designed to be used from the terminal, which means it doesn't natively support graphical user interfaces (GUIs). However, when working with ROS, Gazebo, and MoveIt, having a GUI can be very helpful.
+
+### Unsafe Method (Not Recommended)
+The easiest but least secure method is to grant permission to all local users, including root, to connect to the X server. This can be done by running the following command before starting your Docker container:
+`xhost +local:root`
+This method is not recommended as it opens up your X server to any local user, which can be a significant security risk.
+
+### Safer Method
+A safer option is to allow only the current user to connect to the X server. You can do this by running:
+`xhost +si:localuser:$(whoami)`
+This command limits access to the X server to your current user only, making it a more secure alternative.
+
+### Automating X Server Access Setup
+If you don't want to manually run the xhost command every time you open a terminal, you can automate it by adding the command to your .bashrc file. This way, the command will run automatically whenever you start a new terminal session.
+To do this, run the following command once:
+`echo "xhost +si:localuser:$(whoami) > /dev/null 2>&1" >> ~/.bashrc`
+This will add the safer xhost command to your .bashrc file, ensuring it runs without displaying any output in your terminal.
+
+
+
+
+
