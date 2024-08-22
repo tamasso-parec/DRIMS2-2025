@@ -31,6 +31,8 @@ To run your node you will have to start the container and compile the environmen
 
 Now that you have your node compiled you can run them. Since you have only one terminal inside docker you can use `tmux` to create multiple terminals and run all the required commands. For a guide of all basic tmux commands you can reference the [Tmux Cheat Sheet](https://tmuxcheatsheet.com/)
 
+An alternative solution is to open new terminals and connect to the running container. To do so make sure you have started the container with `start.sh`, then in a new terminal run `connect.sh`, the new terminal is now running inside the container. While you can only run the `start.sh` once, because you can only have one running container named `drims2`, you can use the `connect.sh` script as many time as you want, since you are connecting to a running container.
+
 ## Extras
 
 The `check.sh` script is a simple script that starts the container and performs a set of checks on the environment. Other scripts and source code are provided:
