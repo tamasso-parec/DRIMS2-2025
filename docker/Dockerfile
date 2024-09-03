@@ -7,21 +7,21 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections \
  && echo 'tzdata tzdata/Zones/Etc select UTC' | debconf-set-selections
  
-RUN apt-get update && apt-get install -y build-essential nano 
-
-RUN apt-get update && apt-get install -y ros-noetic-desktop-full ros-noetic-depthai*
-
-RUN apt-get update && apt-get install -y tmux
+RUN apt-get update && \
+    apt-get install -y build-essential nano \ 
+    ros-noetic-desktop-full ros-noetic-depthai* \
+    tmux
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 
 # merlin part
-
-RUN apt-get update && apt install -y ros-${ROS_DISTRO}-ros-control ros-${ROS_DISTRO}-ros-controllers
-RUN apt-get update && apt install -y ros-${ROS_DISTRO}-moveit
-RUN apt-get update && apt install -y build-essential gdb cmake git
-RUN apt-get update && apt-get install -y openssl libssl-dev
-RUN apt-get update && apt-get install -y libmysqlclient-dev
+RUN apt-get update && \
+    apt-get install -y ros-${ROS_DISTRO}-ros-control ros-${ROS_DISTRO}-ros-controllers \
+    ros-${ROS_DISTRO}-moveit-visual-tools libsdformat11-dev \
+    ros-${ROS_DISTRO}-moveit \
+    build-essential gdb cmake git \
+    openssl libssl-dev \
+    libmysqlclient-dev
 
 # Install Boost C++
 RUN apt-get update && apt-get install -y libboost-all-dev
@@ -36,6 +36,15 @@ RUN git clone https://github.com/pocoproject/poco.git /tmp/poco \
  && cmake --build . --target install \
  && cp /usr/local/lib/*Poco* /usr/lib \
  && rm -rf /tmp/poco
+ 
+ # Clone and compile EIPScanner
+RUN git clone https://github.com/nimbuscontrols/EIPScanner.git /tmp/EIPScanner \
+ && cd /tmp/EIPScanner \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && cmake --build . --target install \
+ && rm -rf /tmp/EIPScanner
 
 # Set the group name and GID
 ARG GROUP_NAME=drims2
@@ -54,14 +63,23 @@ RUN usermod -aG $GROUP_NAME drims
 
 RUN mkdir /home/drims/drims_ws \
   && chown -R drims:drims2 /home/drims/drims_ws
-    
+
 # Clone the ABB Omnicore ROS Driver repository and build it
 RUN mkdir -p /home/drims/catkin_ws/src \
  && cd /home/drims/catkin_ws/src \
- && git clone https://github.com/MerlinLaboratory/ABB_omnicore_ros_driver.git 
+ && git clone --branch DRIMS-Volterra-2024 https://github.com/MerlinLaboratory/ABB_omnicore_ros_driver.git 
  
-# Build the ROS workspace
+# Build the ROS workspace, first only the custom messages, because of custom messages
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make --pkg schunk_interfaces"
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
+
+# Now clone the Merlin repo for Volterra
+RUN cd /home/drims/catkin_ws/src \
+ && git clone https://github.com/MerlinLaboratory/DRIMS_volterra.git 
+ 
+# Build again the ROS workspace
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
+
 
 # Environments sources 
 RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
@@ -73,3 +91,4 @@ RUN chmod +x check_script.sh
 
 # Letsgo
 CMD ["bash"]
+
