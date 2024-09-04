@@ -80,6 +80,11 @@ RUN cd /home/drims/catkin_ws/src \
 # Build again the ROS workspace
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
 
+# Add scipy
+RUN apt-get update && apt-get install -y python3-pip
+RUN pip3 install scipy depthai
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; rospack profile"
+
 
 # Environments sources 
 RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
