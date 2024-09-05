@@ -1,0 +1,7 @@
+<launch>
+  <!-- Set the /name parameter -->
+  <param name="/name" value="paramters_chagned" />
+
+  <!-- Launch the static_parameter.py script from the ros_intro package -->
+  <node pkg="ros_intro" type="static_parameter.py" name="param_first" output="screen" />
+</launch>
