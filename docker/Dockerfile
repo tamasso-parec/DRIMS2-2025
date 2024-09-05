@@ -82,7 +82,8 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; c
 
 # Add scipy
 RUN apt-get update && apt-get install -y python3-pip
-RUN pip3 install scipy depthai
+RUN pip3 install scipy
+RUN pip3 install depthai
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; rospack profile"
 
 
