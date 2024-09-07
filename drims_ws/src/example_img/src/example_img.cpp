@@ -10,7 +10,7 @@ public:
     ExampleImgNode()
         : it_(nh_)
     {
-        image_sub_ = it_.subscribe("/oak/rgb/image_raw", 1, &ExampleImgNode::imageCallback, this);
+        image_sub_ = it_.subscribe("/rgb_stereo_publisher/color/image", 1, &ExampleImgNode::imageCallback, this);
         image_pub_ = it_.advertise("/camera/cross_image", 1);
     }
 

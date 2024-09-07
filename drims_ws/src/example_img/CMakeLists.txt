@@ -19,3 +19,8 @@ include_directories(
 
 add_executable(example_img src/example_img.cpp)
 target_link_libraries(example_img ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+install(PROGRAMS
+  scripts/example_image.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
