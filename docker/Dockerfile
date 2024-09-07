@@ -10,7 +10,8 @@ RUN echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections \
 RUN apt-get update && \
     apt-get install -y build-essential nano \ 
     ros-noetic-desktop-full ros-noetic-depthai* \
-    tmux
+    tmux \
+    iputils-ping
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 
@@ -74,11 +75,15 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; c
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
 
 # Now clone the Merlin repo for Volterra
-RUN cd /home/drims/catkin_ws/src \
- && git clone https://github.com/MerlinLaboratory/DRIMS_volterra.git 
+RUN cd /home/drims/catkin_ws/src && git clone https://github.com/MerlinLaboratory/DRIMS_volterra.git 
  
 # Build again the ROS workspace
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
+
+# Now clone DRIMS_template repo
+RUN mkdir -p /home/drims/drims_ws/src 
+RUN cd /home/drims/drims_ws/src && git clone https://github.com/SamueleSandrini/DRIMS_template.git
+RUN /bin/bash -c "source /home/drims/catkin_ws/devel/setup.bash; cd /home/drims/drims_ws; catkin_make"
 
 # Add scipy
 RUN apt-get update && apt-get install -y python3-pip
@@ -86,10 +91,12 @@ RUN pip3 install scipy
 RUN pip3 install depthai
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; rospack profile"
 
-
 # Environments sources 
 RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
 RUN echo "source /home/drims/drims_ws/devel/setup.bash --extend" >> /home/drims/.bashrc
+
+# Source folder containing EIPScanner installation
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> /home/drims/.bashrc
 
 # Add the check script
 COPY check_script.sh /check_script.sh
