@@ -40,7 +40,7 @@ The `check.sh` script is a simple script that starts the container and performs 
 -   `start.sh`: Starts the container in interactive mode
 -   The `docker` folder contains the Dockerfile to build the DRIMS2 image and a script to build the image for multiple architectures using Buildx.
 -   The `drims_ws` folder is the workspace used to develop new code, mounted on `/drims_ws` inside the Docker container. It contains an example node that acquires data from a camera and performs basic image processing.
-- The *bags* folder is a suppoprt folder to allow bags recordings and see provided data inside the docker container. It is mounted under /bags in the docker container.
+- The *bags* folder is a suppoprt folder to allow bags recordings and see provided data inside the docker container. It is mounted in your home, under /home/drims/bags in the docker container.
 
 ## Windows/MacOS
 ROS can work inside docker on Windows and MacOS. Unfortunatly USB and network interfaces are not properly mapped from outside the docker container to inside the container. Therefore if you are not running an Ubuntu system you will require a virtual machine.
