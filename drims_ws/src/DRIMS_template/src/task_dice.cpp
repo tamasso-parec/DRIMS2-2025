@@ -26,7 +26,7 @@ ros::ServiceClient open_gripper_client;
 geometry_msgs::Pose grasp_dice_pose;
 std_msgs::Int16 dice_value;
 int desired_dice_value;
-
+std::string robot;
 //
 ros::Subscriber dice_value_sub;
 ros::Subscriber dice_grasp_sub;
@@ -57,66 +57,13 @@ void dicePoseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
    grasp_dice_pose.orientation.w = msg->pose.orientation.w;
 };
 
-// Function to apply rotation offset
-geometry_msgs::Pose applyRotationOffset(const geometry_msgs::Pose &pose, double angle_degrees, const Eigen::Vector3d &axis)
-{  
-   /**
-     * @brief This function returns a geometry_msgs::Pose by applying a rotation along (X,Y, or Z axis in degree)
-     * @param pose [in] The input geometry_msgs::Pose.
-     * @param angle_degrees [in] The input angle degree.
-     * @param axis [in] The axis w.r.t to apply the rotation.
-     */
-    
-   double angle_radians = angle_degrees * M_PI / 180.0;
-   Eigen::AngleAxisd rotation(angle_radians, axis); //   axis = Eigen::Vector3d::UnitX() or Eigen::Vector3d::UnitY() or Eigen::Vector3d::UnitZ()
-   Eigen::Affine3d offset_eigen = Eigen::Affine3d::Identity();
-   offset_eigen.rotate(rotation);
-
-   // Convert the geometry_msgs::Pose into Eigen
-   Eigen::Affine3d pose_transform_aff;
-   tf::poseMsgToEigen(pose, pose_transform_aff);
-
-   // Post multiplied the input pose for the RotationOffset
-   Eigen::Affine3d offset_pose = pose_transform_aff * offset_eigen;
-
-   // Convert the Eigen into geometry_msgs::Pose
-   geometry_msgs::Pose offset_pose_msg;
-   tf::poseEigenToMsg(offset_pose, offset_pose_msg);
-
-   return offset_pose_msg;
-}
-
-geometry_msgs::Pose applyDisplacementOffset(const geometry_msgs::Pose &pose, const Eigen::Vector3d &displacement)
-{  
-   /**
-     * @brief This function returns a geometry_msgs::Pose by applying a displacement along (X,Y, or Z axis in meters)
-     * @param pose [in] The input geometry_msgs::Pose.
-     * @param displacement [in] The axis w.r.t to apply the displacement
-     */
-   // Create an Eigen Affine3d transformation for the displacement
-   Eigen::Affine3d offset_eigen = Eigen::Affine3d::Identity();
-   offset_eigen.translate(displacement);
-
-   // Convert the geometry_msgs::Pose into Eigen
-   Eigen::Affine3d pose_transform_aff;
-   tf::poseMsgToEigen(pose, pose_transform_aff);
-
-   // Post multiply the input pose for the displacement offset
-   Eigen::Affine3d offset_pose = pose_transform_aff * offset_eigen;
-
-   // Convert the Eigen into geometry_msgs::Pose
-   geometry_msgs::Pose offset_pose_msg;
-   tf::poseEigenToMsg(offset_pose, offset_pose_msg);
-
-   return offset_pose_msg;
-}
 
 /**********************************************
 ROS NODE MAIN TASK SEQUENCE SERVER
 **********************************************/
 int main(int argc, char **argv)
 {
-   ros::init(argc, argv, "task_dice");
+   ros::init(argc, argv, "test_example");
 
    ros::NodeHandle nh_;
 
@@ -127,6 +74,16 @@ int main(int argc, char **argv)
    }
 
    ROS_INFO("The desired dice value is: %d", desired_dice_value);
+
+   // Parse the robot you want to use (gofa or yumi)
+   if (nh_.getParam("/control_server_node/robot", robot))
+   {
+      ROS_INFO("The arm you want to use is: %s", robot.c_str());
+   }
+   else
+   {
+      ROS_ERROR("Failed to get '/control_server_node/robot' parameter.");
+   }
 
    // Create subscribers for dice_value and grasp_dice_pose
    dice_value_sub = nh_.subscribe("/dice_value", 1, dicevalueCallback);
@@ -163,16 +120,35 @@ int main(int argc, char **argv)
 
    ROS_INFO("At the beginning of the task");
 
-   /* DICE MANIPULATION TASK*/
+   /* GRASP DICE TASK*/
+   std::vector<double>home_joints;
+   // Home Joint for GoFa (6 joint values)
+   if (robot == "gofa")
+   {
+      home_joints.assign({-1.98, 0.0, 0.51, -0.07, 0.94, 0.0});
+   }
+
+   // Home Joint for YuMi(7 joint values)
+   if (robot == "yumi")
+   {  
+      home_joints.assign({0.5778451033162864, -0.4259838682137797, 2.765560699257221, 0.40098920256651815, 0.2795610410838103, 0.8403600825003401, -1.0629680588027473});
+   }
+
+   // 1) Plan and go towards a HOME JOINTS goal
+   bool success = call_plan_and_execute_joint(home_joints);
    
-   /*Create your own task to grasp the dice by using the function: 
-    _ call_plan_and_execute_pose
+   /* Task of MANIPULATION DICE*/
+   
+   /*Create your own task to manipulate the dice by using the functions listed below: 
+    _call_plan_and_execute_pose
     _call_plan_and_execute_slerp
     _call_plan_and_execute_joint
     _call_open_gripper
     _call_close_gripper
-     reported from lined 170 to 242
+     reported from line 155 to 277
     */
+   
+   /**/
 
    ros::waitForShutdown();
    spinner.stop();
@@ -180,17 +156,17 @@ int main(int argc, char **argv)
 }
 
 bool call_plan_and_execute_pose(geometry_msgs::Pose goal_pose, bool is_relative)
-{  
-   /**
-     * @brief This functions implements a trajectory planning from the current state of the robot or from the last point of the previous past trajectory toward a specified target Cartesian goal.
-     *
-     *
-     * @param goal_pose [in] The Cartesian target goal you want to plan toward.
-     * @param is_goal_relative [in] Set True if you want to plan towards a relative goal_pose (previous input)that is relative.
-     *                              Example: You want to move the robot w.r.t the current pose of the robot.
-     *                              Set False if you want to plan towards an absolute goal_pose (previous input) w.r.t the fixed frame of the robot.
-     *                              Example: You want to move the robot from the current_pose toward a absolute global pose.
-     */
+{ /**
+   * @brief This functions implements a trajectory planning from the current state of the robot or from the last point of the previous past trajectory toward a specified target Cartesian goal.
+   *
+   *
+   * @param goal_pose [in] The Cartesian target goal you want to plan toward.
+   * @param is_goal_relative [in] Set True if you want to plan towards a relative goal_pose (previous input)that is relative.
+   *                              Example: You want to move the robot w.r.t the current pose of the robot.
+   *                              Set False if you want to plan towards an absolute goal_pose (previous input) w.r.t the fixed frame of the robot.
+   *                              Example: You want to move the robot from the current_pose toward a absolute global pose.
+   */
+
    abb_wrapper_msgs::plan_and_execute_pose plan_and_execute_pose_srv;
    plan_and_execute_pose_srv.request.goal_pose = goal_pose;
    plan_and_execute_pose_srv.request.is_relative = is_relative;
@@ -208,17 +184,17 @@ bool call_plan_and_execute_pose(geometry_msgs::Pose goal_pose, bool is_relative)
 }
 
 bool call_plan_and_execute_slerp(geometry_msgs::Pose goal_pose, bool is_relative)
-{  
+{
    /**
-     * @brief This functions implements a trajectory planning from the current state of the robot or from the last point of the previous past trajectory toward a specified target Cartesian goal by using SLERP interpolation.
-     *
-     *
-     * @param goal_pose [in] The Cartesian target goal you want to plan toward.
-     * @param is_goal_relative [in] Set True if you want to plan towards a relative goal_pose (previous input)that is relative.
-     *                              Example: You want to move the robot w.r.t the current pose of the robot.
-     *                              Set False if you want to plan towards an absolute goal_pose (previous input) w.r.t the fixed frame of the robot.
-     *                              Example: You want to move the robot from the current_pose toward a absolute global pose.
-     */
+    * @brief This functions implements a trajectory planning from the current state of the robot or from the last point of the previous past trajectory toward a specified target Cartesian goal by using SLERP interpolation.
+    *
+    *
+    * @param goal_pose [in] The Cartesian target goal you want to plan toward.
+    * @param is_goal_relative [in] Set True if you want to plan towards a relative goal_pose (previous input)that is relative.
+    *                              Example: You want to move the robot w.r.t the current pose of the robot.
+    *                              Set False if you want to plan towards an absolute goal_pose (previous input) w.r.t the fixed frame of the robot.
+    *                              Example: You want to move the robot from the current_pose toward a absolute global pose.
+    */
    abb_wrapper_msgs::plan_and_execute_slerp plan_and_execute_slerp_srv;
    plan_and_execute_slerp_srv.request.goal_pose = goal_pose;
    plan_and_execute_slerp_srv.request.is_relative = is_relative;
@@ -236,12 +212,12 @@ bool call_plan_and_execute_slerp(geometry_msgs::Pose goal_pose, bool is_relative
 }
 
 bool call_plan_and_execute_joint(std::vector<double> joint_goal)
-{  
+{
    /**
-     * @brief This functions implements a trajectory planning from the current state of the robot or from the last point of the previous past trajectory toward a joint position goal.
-     *
-     * @param joint_goal [in] The joint position goal you want to plan toward.
-     */
+    * @brief This functions implements a trajectory planning from the current state of the robot or from the last point of the previous past trajectory toward a joint position goal.
+    *
+    * @param joint_goal [in] The joint position goal you want to plan toward.
+    */
    abb_wrapper_msgs::plan_and_execute_joint plan_and_execute_joint_srv;
    plan_and_execute_joint_srv.request.joint_goal = joint_goal;
 
@@ -258,12 +234,12 @@ bool call_plan_and_execute_joint(std::vector<double> joint_goal)
 }
 
 bool call_open_gripper(bool in_flag)
-{  
+{
    /**
-     * @brief This functions implements the opening of the gripper
-     *
-     * @param in_flag [in] Set to true.
-     */
+    * @brief This functions implements the opening of the gripper
+    *
+    * @param in_flag [in] Set to true.
+    */
    abb_wrapper_msgs::open_gripper open_gripper_srv;
    open_gripper_srv.request.in_flag = in_flag;
 
@@ -282,12 +258,12 @@ bool call_open_gripper(bool in_flag)
 }
 
 bool call_close_gripper(bool in_flag)
-{  
-      /**
-     * @brief This functions implements the closing of the gripper
-     *
-     * @param in_flag [in] Set to true.
-     */
+{
+   /**
+    * @brief This functions implements the closing of the gripper
+    *
+    * @param in_flag [in] Set to true.
+    */
    abb_wrapper_msgs::close_gripper close_gripper_srv;
    close_gripper_srv.request.in_flag = in_flag;
 
