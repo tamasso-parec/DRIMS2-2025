@@ -131,7 +131,7 @@ int main(int argc, char **argv)
    // Home Joint for YuMi(7 joint values)
    if (robot == "yumi")
    {  
-      home_joints.assign({-2.41, 0.0, -4.20, 1.03, -0.16, 0.0, 0.0});
+      home_joints.assign({0.5778451033162864, -0.4259838682137797, 2.765560699257221, 0.40098920256651815, 0.2795610410838103, 0.8403600825003401, -1.0629680588027473});
    }
    
    /* Task of MANIPULATION DICE*/
