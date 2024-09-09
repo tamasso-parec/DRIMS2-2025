@@ -133,6 +133,9 @@ int main(int argc, char **argv)
    {  
       home_joints.assign({0.5778451033162864, -0.4259838682137797, 2.765560699257221, 0.40098920256651815, 0.2795610410838103, 0.8403600825003401, -1.0629680588027473});
    }
+
+   // 1) Plan and go towards a HOME JOINTS goal
+   bool success = call_plan_and_execute_joint(home_joints);
    
    /* Task of MANIPULATION DICE*/
    
