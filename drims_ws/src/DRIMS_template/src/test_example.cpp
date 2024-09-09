@@ -57,58 +57,6 @@ void dicePoseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
    grasp_dice_pose.orientation.w = msg->pose.orientation.w;
 };
 
-// Function to apply rotation offset
-geometry_msgs::Pose applyRotationOffset(const geometry_msgs::Pose &pose, double angle_degrees, const Eigen::Vector3d &axis)
-{
-   /**
-    * @brief This function returns a geometry_msgs::Pose by applying a rotation along (X,Y, or Z axis in degree)
-    * @param pose [in] The input geometry_msgs::Pose.
-    * @param angle_degrees [in] The input angle degree.
-    * @param axis [in] The axis w.r.t to apply the rotation.
-    */
-   double angle_radians = angle_degrees * M_PI / 180.0;
-   Eigen::AngleAxisd rotation(angle_radians, axis); //   axis = Eigen::Vector3d::UnitX() or Eigen::Vector3d::UnitY() or Eigen::Vector3d::UnitZ()
-   Eigen::Affine3d offset_eigen = Eigen::Affine3d::Identity();
-   offset_eigen.rotate(rotation);
-
-   // Convert the geometry_msgs::Pose into Eigen
-   Eigen::Affine3d pose_transform_aff;
-   tf::poseMsgToEigen(pose, pose_transform_aff);
-
-   // Post multiplied the input pose for the RotationOffset
-   Eigen::Affine3d offset_pose = pose_transform_aff * offset_eigen;
-
-   // Convert the Eigen into geometry_msgs::Pose
-   geometry_msgs::Pose offset_pose_msg;
-   tf::poseEigenToMsg(offset_pose, offset_pose_msg);
-
-   return offset_pose_msg;
-}
-
-geometry_msgs::Pose applyDisplacementOffset(const geometry_msgs::Pose &pose, const Eigen::Vector3d &displacement)
-{
-   /**
-    * @brief This function returns a geometry_msgs::Pose by applying a displacement along (X,Y, or Z axis in meters)
-    * @param pose [in] The input geometry_msgs::Pose.
-    * @param displacement [in] The axis w.r.t to apply the displacement
-    */
-   // Create an Eigen Affine3d transformation for the displacement
-   Eigen::Affine3d offset_eigen = Eigen::Affine3d::Identity();
-   offset_eigen.translate(displacement);
-
-   // Convert the geometry_msgs::Pose into Eigen
-   Eigen::Affine3d pose_transform_aff;
-   tf::poseMsgToEigen(pose, pose_transform_aff);
-
-   // Post multiply the input pose for the displacement offset
-   Eigen::Affine3d offset_pose = pose_transform_aff * offset_eigen;
-
-   // Convert the Eigen into geometry_msgs::Pose
-   geometry_msgs::Pose offset_pose_msg;
-   tf::poseEigenToMsg(offset_pose, offset_pose_msg);
-
-   return offset_pose_msg;
-}
 
 /**********************************************
 ROS NODE MAIN TASK SEQUENCE SERVER
@@ -173,54 +121,49 @@ int main(int argc, char **argv)
    ROS_INFO("At the beginning of the task");
 
    /* GRASP DICE TASK*/
-
-   // Home Joint for Gofa (6 joint values)
-   std::vector<double> home_joints{-2.24, -0.17, 0.79, -0.11, 1.03, -0.48};
-
-   // Home Joint for YuMi (7 joint values)
-   if (robot == "yumi")
+   std::vector<double>home_joints;
+   // Home Joint for GoFa (6 joint values)
+   if (robot == "gofa")
    {
-      home_joints.push_back(0.0);
+      home_joints.assign({-1.98, 0.0, 0.51, -0.07, 0.94, 0.0});
    }
 
-   // Plan towards a Home Joint Goal
+   // Home Joint for YuMi(7 joint values)
+   if (robot == "yumi")
+   {  
+      home_joints.assign({-2.41, 0.0, -4.20, 1.03, -0.16, 0.0, 0.0});
+   }
+   
+   /* Task of MANIPULATION DICE*/
+
+   // 1) Plan and go towards a HOME JOINTS goal
    bool success = call_plan_and_execute_joint(home_joints);
 
-   //
-   ros::spinOnce();
-
-   // Add the displacement along z-axis of the grasp_dice_pose: 6 cm above the grasp_dice_pose
-   geometry_msgs::Pose pre_grasp_pose = applyDisplacementOffset(grasp_dice_pose, Eigen::Vector3d(0.0, 0.0, -0.06));
-
-   // open Gripper
+   // 2) OPEN the gripper (Schunk for Gofa and Smart Gripper for YuMi)
    success = call_open_gripper(true);
-   // Approach to pre_grasp_pose
-   success = call_plan_and_execute_pose(pre_grasp_pose, false);
-   //
 
-   // Go into Grasp Pose
+   // Plan towards a PRE GRASP POSE (6 cm above the GRASP POSE of the dice)
+   ros::spinOnce();
+   geometry_msgs::Pose pre_grasp_pose = grasp_dice_pose;
+   pre_grasp_pose.position.z += 0.06;
+
+   // 3) Plan and go towards PRE GRASP POSE
+   success = call_plan_and_execute_pose(pre_grasp_pose, false);
+   
+   // 4) Plan and go towards a GRASP POSE
    success = call_plan_and_execute_slerp(grasp_dice_pose, false);
 
-   // Close the gripper
+   // 5) CLOSE the gripper
    success = call_close_gripper(true);
 
-   // Relative offset of 6 cm in order to plan from the current state of the robot
-   geometry_msgs::Pose empty_pose;
-   geometry_msgs::Pose displacement_pose = applyDisplacementOffset(empty_pose, Eigen::Vector3d(0.0, 0.0, -0.06));
+   // 6)  Plan and go towards PRE GRASP POSE
+   success = call_plan_and_execute_slerp(pre_grasp_pose, false);
 
-   // Set true to plan w.r.t a relative offset (the boolean flag is set to true)
-   success = call_plan_and_execute_slerp(displacement_pose, true);
-
-   // Open Gripper
+   // 7) OPEN the gripper
    success = call_open_gripper(true);
+   
+   /**/
 
-   // Rotate along X-axis of grasp link frame
-   geometry_msgs::Pose rotation_pose = applyRotationOffset(empty_pose, -18.0, Eigen::Vector3d::UnitX());
-
-   //
-   success = call_plan_and_execute_slerp(rotation_pose, true);
-
-   //
    ros::waitForShutdown();
    spinner.stop();
    return 0;
