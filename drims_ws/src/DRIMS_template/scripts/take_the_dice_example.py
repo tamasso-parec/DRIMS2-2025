@@ -114,11 +114,11 @@ def main():
     
     rospy.loginfo('Going to home...')
     goal_joints = []
-    if not rospy.has_param('/robot/name'):
+    if not rospy.has_param('/control_server_node/robot'):
         rospy.logerr('No robot loaded')
         return
     
-    robot_name = rospy.get_param('/robot/name')
+    robot_name = rospy.get_param('/control_server_node/robot')
     if robot_name == 'yumi_single_arm' or robot_name == 'yumi':
         goal_joints = [-2.12, -0.1, 0.6, -0.04, 0.16, 1.6, -2.56]
         # goal_joints = [-1.2, 0.18, -0.37, 0.01, 0.05, 1.4, -1.6]

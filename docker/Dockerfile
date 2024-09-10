@@ -74,7 +74,7 @@ RUN mkdir -p /home/drims/catkin_ws/src \
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make --pkg schunk_interfaces"
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
 
-# Now clone the Merlin repo for Volterra
+# Now clone the Merlin repo for Volterra (force rebuild from here)
 RUN cd /home/drims/catkin_ws/src && git clone https://github.com/MerlinLaboratory/DRIMS_volterra.git 
  
 # Build again the ROS workspace
@@ -90,6 +90,7 @@ RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install scipy
 RUN pip3 install depthai
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; rospack profile"
+RUN pip3 install --upgrade scipy
 
 # Environments sources 
 RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
