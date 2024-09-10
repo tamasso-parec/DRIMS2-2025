@@ -65,10 +65,10 @@ RUN usermod -aG $GROUP_NAME drims
 RUN mkdir /home/drims/drims_ws \
   && chown -R drims:drims2 /home/drims/drims_ws
 
-# Clone the ABB Omnicore ROS Driver repository and build it
+# Clone the ABB Omnicore ROS Driver repository and build it (some chagnes just to force recompile from here)
 RUN mkdir -p /home/drims/catkin_ws/src \
  && cd /home/drims/catkin_ws/src \
- && git clone --branch DRIMS-Volterra-2024 https://github.com/MerlinLaboratory/ABB_omnicore_ros_driver.git 
+ && git clone --branch DRIMS-Volterra-2024 https://github.com/MerlinLaboratory/ABB_omnicore_ros_driver.git
  
 # Build the ROS workspace, first only the custom messages, because of custom messages
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make --pkg schunk_interfaces"
@@ -92,16 +92,23 @@ RUN pip3 install depthai
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; rospack profile"
 RUN pip3 install --upgrade scipy
 
+# Source folder containing EIPScanner installation
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> /home/drims/.bashrc
+
+
 # Environments sources 
+RUN echo "source /opt/ros/noetic/setup.bash" >> /home/drims/.bashrc
+
 RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
 RUN echo "source /home/drims/drims_ws/devel/setup.bash --extend" >> /home/drims/.bashrc
 
-# Source folder containing EIPScanner installation
-RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> /home/drims/.bashrc
 
 # Add the check script
 COPY check_script.sh /check_script.sh
 RUN chmod +x check_script.sh
+
+#stupid change
+COPY real_robot.interal.launch /home/drims/catkin_ws/src/DRIMS_volterra/drims_dice_demo/launch/real_robot.interal.launch
 
 # Letsgo
 CMD ["bash"]
