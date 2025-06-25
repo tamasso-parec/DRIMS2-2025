@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Source the ROS setup script
-source /home/drims/catkin_ws/devel/setup.bash
+# Source the ROS 2 setup script
+source /opt/ros/humble/setup.bash
+if [ -f /home/drims/drims_ws/install/setup.bash ]; then
+    source /home/drims/drims_ws/install/setup.bash
+fi
 
 # Function to check if a command exists
 command_exists() {
@@ -9,29 +12,15 @@ command_exists() {
 }
 
 # Check if /drims_ws exists
-if [ -f /home/drims/drims_ws/.placeholder ]; then
+if [ -d /home/drims/drims_ws/src ]; then
     echo "drims ws exists"
 else
     echo "drims ws does not exist"
 fi
 
-# Check if ROS is installed
-if command_exists rospack; then
-    echo "ROS installed"
-
-    # Check for omnicore_launcher package
-    if rospack list | grep -q omnicore_launcher; then
-        echo "omnicore installed"
-    else
-        echo "omnicore_launcher not found"
-    fi
-
-    # Check for depthai_ros_driver package
-    if rospack list | grep -q depthai_ros_driver; then
-        echo "depthai installed"
-    else
-        echo "depthai_ros_driver not found"
-    fi
+# Check if ROS 2 is installed
+if command_exists ros2; then
+    echo "ROS 2 installed"
 else
-    echo "ROS not installed"
+    echo "ROS 2 not installed"
 fi

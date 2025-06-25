@@ -1,9 +1,4 @@
-# Ignore build folder
+# Ignore ROS 2 build artifacts
 drims_ws/build/
-
-# Ignore devel folder
-drims_ws/devel/
-
-# Ignore system specific CMakeLists.txt file
-drims_ws/src/CMakeLists.txt
-drims_ws/.catkin_workspace
+drims_ws/install/
+drims_ws/log/
