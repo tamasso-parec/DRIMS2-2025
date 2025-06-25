@@ -1,4 +1,4 @@
-FROM ros:humble-desktop
+FROM ros:humble-perception
 
 # Set the environment variable to non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -18,33 +18,14 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 RUN apt-get update && \
     apt-get install -y ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-moveit \
-    libsdformat11-dev \
     build-essential gdb cmake git \
     openssl libssl-dev \
-    libmysqlclient-dev
+    libmysqlclient-dev \
+    ros-humble-depthai-ros
 
 # Install Boost C++
 RUN apt-get update && apt-get install -y libboost-all-dev
 
-# Clone and compile Poco libraries
-RUN git clone https://github.com/pocoproject/poco.git /tmp/poco \
- && cd /tmp/poco \
- && mkdir cmake-build \
- && cd cmake-build \
- && cmake .. \
- && cmake --build . --config Release \
- && cmake --build . --target install \
- && cp /usr/local/lib/*Poco* /usr/lib \
- && rm -rf /tmp/poco
- 
- # Clone and compile EIPScanner
-RUN git clone https://github.com/nimbuscontrols/EIPScanner.git /tmp/EIPScanner \
- && cd /tmp/EIPScanner \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . --target install \
- && rm -rf /tmp/EIPScanner
 
 # Set the group name and GID
 ARG GROUP_NAME=drims2
@@ -70,9 +51,6 @@ RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install scipy
 RUN pip3 install depthai
 RUN pip3 install --upgrade scipy
-
-# Source folder containing EIPScanner installation
-RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> /home/drims/.bashrc
 
 
 # Environments sources 
