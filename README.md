@@ -2,11 +2,11 @@
 
 # DRIMS2 Docker Image
 
-This repository contains the Dockerfiles to build the Docker image for the DRIMS2 summer school, a set of scripts to start the container and check the installation, and an example node to process camera data.
+This repository contains the Dockerfiles to build the Docker image for the DRIMS2 summer school together with a set of scripts to start the container and check the installation.
 
 ## How to Get Ready for DRIMS2 Summer School
 
-To use ROS, you will need Docker. This allows you to avoid being tied to a specific Ubuntu version to satisfy the ROS-Ubuntu compatibility.
+To use ROS 2 you will need Docker. This allows you to avoid being tied to a specific Ubuntu version to satisfy the ROS–Ubuntu compatibility.
 
 1.  First, install Docker by following the official Docker tutorial: [Install Docker on Ubuntu](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 2.  Test the installation by running the hello-world container: `docker run hello-world`
@@ -22,12 +22,12 @@ Once Docker is properly installed, you can get the Docker image for the DRIMS2 s
 4.  The script will automatically download the latest Docker image and start the container, checking that all requirements are satisfied and external folders are mounted properly.
 5.  If no errors are printed on the terminal, you are ready for the DRIMS2 summer school.
 
-## Developing your ROS nodes
-The drims_ws folder and the bag folder are mounted inside the docker container and are used for code development. All your code will go inside the drims_ws/src folder, where you can already find example nodes. 
+## Developing your ROS 2 nodes
+The `drims_ws` folder and the `bags` folder are mounted inside the Docker container and are used for code development. All your code will go inside the `drims_ws/src` folder. The workspace starts empty so you can create your own packages.
 To run your node you will have to start the container and compile the environment, to do so:
 1. Run the script `start.sh`
 2. Then move inside the workspace directory `cd drims_ws`
-3. Compile the environment `catkin_make`
+3. Compile the environment with `colcon build`
 
 Now that you have your node compiled you can run them. Since you have only one terminal inside docker you can use `tmux` to create multiple terminals and run all the required commands. For a guide of all basic tmux commands you can reference the [Tmux Cheat Sheet](https://tmuxcheatsheet.com/)
 
@@ -39,7 +39,7 @@ The `check.sh` script is a simple script that starts the container and performs 
 
 -   `start.sh`: Starts the container in interactive mode
 -   The `docker` folder contains the Dockerfile to build the DRIMS2 image and a script to build the image for multiple architectures using Buildx.
--   The `drims_ws` folder is the workspace used to develop new code, mounted on `/drims_ws` inside the Docker container. It contains an example node that acquires data from a camera and performs basic image processing.
+-   The `drims_ws` folder is the workspace used to develop new code, mounted on `/drims_ws` inside the Docker container.
 - The *bags* folder is a suppoprt folder to allow bags recordings and see provided data inside the docker container. It is mounted in your home, under /home/drims/bags in the docker container.
 
 ## Windows/MacOS

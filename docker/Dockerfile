@@ -1,4 +1,4 @@
-FROM ros:noetic-perception-focal
+FROM ros:humble-desktop
 
 # Set the environment variable to non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -8,18 +8,17 @@ RUN echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections \
  && echo 'tzdata tzdata/Zones/Etc select UTC' | debconf-set-selections
  
 RUN apt-get update && \
-    apt-get install -y build-essential nano \ 
-    ros-noetic-desktop-full ros-noetic-depthai* \
+    apt-get install -y build-essential nano \
+    python3-colcon-common-extensions \
     tmux \
     iputils-ping
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 
-RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
-
-# merlin part
+# Additional ROS 2 tools
 RUN apt-get update && \
-    apt-get install -y ros-${ROS_DISTRO}-ros-control ros-${ROS_DISTRO}-ros-controllers \
-    ros-${ROS_DISTRO}-moveit-visual-tools libsdformat11-dev \
+    apt-get install -y ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-moveit \
+    libsdformat11-dev \
     build-essential gdb cmake git \
     openssl libssl-dev \
     libmysqlclient-dev
@@ -65,31 +64,11 @@ RUN usermod -aG $GROUP_NAME drims
 RUN mkdir /home/drims/drims_ws \
   && chown -R drims:drims2 /home/drims/drims_ws
 
-# Clone the ABB Omnicore ROS Driver repository and build it (some chagnes just to force recompile from here)
-RUN mkdir -p /home/drims/catkin_ws/src \
- && cd /home/drims/catkin_ws/src \
- && git clone --branch DRIMS-Volterra-2024 https://github.com/MerlinLaboratory/ABB_omnicore_ros_driver.git
- 
-# Build the ROS workspace, first only the custom messages, because of custom messages
-RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make --pkg schunk_interfaces"
-RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
-
-# Now clone the Merlin repo for Volterra (force rebuild from here)
-RUN cd /home/drims/catkin_ws/src && git clone https://github.com/MerlinLaboratory/DRIMS_volterra.git 
- 
-# Build again the ROS workspace
-RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; cd /home/drims/catkin_ws; catkin_make"
-
-# Now clone DRIMS_template repo
-RUN mkdir -p /home/drims/drims_ws/src 
-RUN cd /home/drims/drims_ws/src && git clone https://github.com/SamueleSandrini/DRIMS_template.git
-RUN /bin/bash -c "source /home/drims/catkin_ws/devel/setup.bash; cd /home/drims/drims_ws; catkin_make"
 
 # Add scipy
 RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install scipy
 RUN pip3 install depthai
-RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; rospack profile"
 RUN pip3 install --upgrade scipy
 
 # Source folder containing EIPScanner installation
@@ -97,19 +76,13 @@ RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> /home/drims
 
 
 # Environments sources 
-RUN echo "source /opt/ros/noetic/setup.bash" >> /home/drims/.bashrc
-
-RUN echo "source /home/drims/catkin_ws/devel/setup.bash" >> /home/drims/.bashrc
-RUN echo "source /home/drims/drims_ws/devel/setup.bash --extend" >> /home/drims/.bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> /home/drims/.bashrc
+RUN echo "if [ -f /home/drims/drims_ws/install/setup.bash ]; then source /home/drims/drims_ws/install/setup.bash; fi" >> /home/drims/.bashrc
 
 
 # Add the check script
 COPY check_script.sh /check_script.sh
 RUN chmod +x check_script.sh
-
-#stupid change
-COPY real_robot.interal.launch /home/drims/catkin_ws/src/DRIMS_volterra/drims_dice_demo/launch/real_robot.interal.launch
-
 # Letsgo
 CMD ["bash"]
 

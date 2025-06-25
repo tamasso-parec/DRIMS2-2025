@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_publisher" output="screen"
-        args="0 0.5 0 0 0 0 1 oak-d-base-frame new_camera" />
-</launch>
