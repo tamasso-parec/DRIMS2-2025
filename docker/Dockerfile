@@ -15,13 +15,13 @@ RUN apt-get update && apt-get install -y \
     ros-humble-ros2-control ros-humble-ros2-controllers \
     ros-humble-moveit ros-humble-depthai-ros \
     ros-humble-behaviortree-cpp* ros-humble-ros-testing freeglut3-dev ros-humble-moveit-resources-* \
-    libprotobuf-dev protobuf-compiler
+    libprotobuf-dev protobuf-compiler ros-humble-tf*
     
 RUN apt-get install -y python3-pip python3-colcon-common-extensions python3-pybind11 cmake
     
 
 # Python dependencies
-RUN pip3 install --upgrade scipy depthai
+RUN pip3 install --upgrade scipy depthai trimesh transforms3d
 
 # Create user and group with correct IDs
 ARG GROUP_NAME=drims2
