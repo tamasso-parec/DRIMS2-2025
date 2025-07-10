@@ -2,3 +2,5 @@
 drims_ws/build/
 drims_ws/install/
 drims_ws/log/
+docker/abb_librws_2.0
+docker/abb_omnicore_ros2

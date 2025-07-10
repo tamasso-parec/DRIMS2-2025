@@ -1,66 +1,80 @@
 FROM ros:humble-perception
 
-# Set the environment variable to non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Preconfigure debconf for any package that might ask for interactive inputs
+# Set timezone (avoid tzdata prompt)
 RUN echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections \
  && echo 'tzdata tzdata/Zones/Etc select UTC' | debconf-set-selections
- 
-RUN apt-get update && \
-    apt-get install -y build-essential nano \
+
+# Base tools
+RUN apt-get update && apt-get install -y \
+    build-essential nano tmux iputils-ping gdb cmake git openssl libssl-dev libmysqlclient-dev \
     python3-colcon-common-extensions \
-    tmux \
-    iputils-ping
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+    python3-pip \
+    libboost-all-dev \
+    ros-humble-ros2-control ros-humble-ros2-controllers \
+    ros-humble-moveit ros-humble-depthai-ros \
+    ros-humble-behaviortree-cpp* ros-humble-ros-testing freeglut3-dev ros-humble-moveit-resources-* \
+    libprotobuf-dev protobuf-compiler
+    
+RUN apt-get install -y python3-pip python3-colcon-common-extensions python3-pybind11 cmake
+    
 
-# Additional ROS 2 tools
-RUN apt-get update && \
-    apt-get install -y ros-${ROS_DISTRO}-ros2-control ros-${ROS_DISTRO}-ros2-controllers \
-    ros-${ROS_DISTRO}-moveit \
-    build-essential gdb cmake git \
-    openssl libssl-dev \
-    libmysqlclient-dev \
-    ros-humble-depthai-ros
+# Python dependencies
+RUN pip3 install --upgrade scipy depthai
 
-# Install Boost C++
-RUN apt-get update && apt-get install -y libboost-all-dev
-
-
-# Set the group name and GID
+# Create user and group with correct IDs
 ARG GROUP_NAME=drims2
 ARG GROUP_ID=42042
 ARG USER_NAME=drims
 ARG USER_ID=1001
 
-# Create the group and user 
-RUN useradd -ms /bin/bash drims && \
-    echo "drims:drims" | chpasswd
-    
-RUN groupadd -g $GROUP_ID $GROUP_NAME 
+RUN groupadd -g $GROUP_ID $GROUP_NAME && \
+    useradd -ms /bin/bash -u $USER_ID -g $GROUP_ID $USER_NAME && \
+    echo "$USER_NAME:$USER_NAME" | chpasswd
 
-# Add the user 'drims' to the created group
-RUN usermod -aG $GROUP_NAME drims    
+# Setup workspace as root
+RUN mkdir -p /home/$USER_NAME/static/drims2_ws/src
 
-RUN mkdir /home/drims/drims_ws \
-  && chown -R drims:drims2 /home/drims/drims_ws
+WORKDIR /home/$USER_NAME/static/drims2_ws/src
+
+# Clone code as root
+RUN git clone https://github.com/SamueleSandrini/drims2_motion_control.git
+RUN vcs import < drims2_motion_control/dependencies.repos
+RUN git clone https://github.com/CNR-STIIMA-IRAS/drims2_dice_simulator.git
+RUN git clone https://github.com/CNR-STIIMA-IRAS/drims2_cells
+COPY deps.repos drims2_cells/deps.repos
+RUN vcs import < drims2_cells/deps.repos
+
+COPY abb_librws_2.0 ./abb_librws_2.0
+COPY abb_omnicore_ros2 ./abb_omnicore_ros2
+
+RUN bash ./abb_librws_2.0/setup_poco_ppa.sh
+
+# Fix ownership of everything
+RUN chown -R $USER_NAME:$GROUP_NAME /home/$USER_NAME
+
+# Switch to the user
+USER $USER_NAME
+WORKDIR /home/$USER_NAME/static/drims2_ws
 
 
-# Add scipy
-RUN apt-get update && apt-get install -y python3-pip
-RUN pip3 install scipy
-RUN pip3 install depthai
-RUN pip3 install --upgrade scipy
+# 1st build: just build interfaces and messages
+SHELL ["/bin/bash", "-c"]
+RUN source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release #--packages-select drims2_msgs
 
 
-# Environments sources 
-RUN echo "source /opt/ros/humble/setup.bash" >> /home/drims/.bashrc
-RUN echo "if [ -f /home/drims/drims_ws/install/setup.bash ]; then source /home/drims/drims_ws/install/setup.bash; fi" >> /home/drims/.bashrc
-
+# Add ROS and workspace to bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN echo "if [ -f ~/static/drims2_ws/install/setup.bash ]; then source ~/static/drims2_ws/install/setup.bash; fi" >> ~/.bashrc
 
 # Add the check script
-COPY check_script.sh /check_script.sh
-RUN chmod +x check_script.sh
-# Letsgo
+COPY check_script.sh /home/$USER_NAME/check_script.sh
+USER root
+RUN chmod +x /home/$USER_NAME/check_script.sh
+
+WORKDIR /home/$USER_NAME
+
+#Letsgo
 CMD ["bash"]
 
