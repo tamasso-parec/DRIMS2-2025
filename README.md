@@ -15,9 +15,9 @@ To use ROS 2 you will need Docker. This allows you to avoid being tied to a spe
 
 Once Docker is properly installed, you can get the Docker image for the DRIMS2 summer school:
 
-1.  Clone the repository
+1. Clone the repository
 2. Run the script `setup.sh` this will add the udev rules for the Luxonis camera and add the drims2 group to your system. Once the script runs succesfully reboot the system.
-3.  Run the check script:
+3. Run the check script:
     -   `./check.sh`
 4.  The script will automatically download the latest Docker image and start the container, checking that all requirements are satisfied and external folders are mounted properly.
 5.  If no errors are printed on the terminal, you are ready for the DRIMS2 summer school.
@@ -40,10 +40,10 @@ The `check.sh` script is a simple script that starts the container and performs 
 -   `start.sh`: Starts the container in interactive mode
 -   The `docker` folder contains the Dockerfile to build the DRIMS2 image and a script to build the image for multiple architectures using Buildx.
 -   The `drims_ws` folder is the workspace used to develop new code, mounted on `/drims_ws` inside the Docker container.
-- The *bags* folder is a suppoprt folder to allow bags recordings and see provided data inside the docker container. It is mounted in your home, under /home/drims/bags in the docker container.
+- The *bags* folder is a support folder to allow bags recordings and see provided data inside the docker container. It is mounted in your home, under /home/drims/bags in the docker container.
 
 ## Windows/MacOS
-ROS can work inside docker on Windows and MacOS. Unfortunatly USB and network interfaces are not properly mapped from outside the docker container to inside the container. Therefore if you are not running an Ubuntu system you will require a virtual machine.
+ROS can work inside docker on Windows and MacOS. Unfortunatly USB and network interfaces are not properly mapped from outside the docker container to inside the container (needed for hands on). Therefore if you are not running an Ubuntu system you will require a virtual machine.
 1. Follow the instructions on the Ubuntu website to [configure Virtualbox ](https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox#1-overview)
 2. Once your Ubuntu Virtualbox is running, follow the above steps, like if you were using Ubuntu:
 	  - install docker
