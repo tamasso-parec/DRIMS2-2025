@@ -1,0 +1,3 @@
+[wsl2]
+kernel=C:\\Sources\\drims2
+networkingMode=mirrored

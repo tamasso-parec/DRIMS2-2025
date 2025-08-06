@@ -4,6 +4,8 @@
 
 This repository contains the Dockerfiles to build the Docker image for the DRIMS2 summer school together with a set of scripts to start the container and check the installation.
 
+The first part of the guide assume you are working on some version of Linux (**highly recommended**), if you are on windows go to the end of this guide, follow the Windows instructions 
+
 ## How to Get Ready for DRIMS2 Summer School
 
 To use ROS 2 you will need Docker. This allows you to avoid being tied to a specific Ubuntu version to satisfy the ROS–Ubuntu compatibility.
@@ -42,15 +44,131 @@ The `check.sh` script is a simple script that starts the container and performs 
 -   The `drims_ws` folder is the workspace used to develop new code, mounted on `/drims_ws` inside the Docker container.
 - The *bags* folder is a support folder to allow bags recordings and see provided data inside the docker container. It is mounted in your home, under /home/drims/bags in the docker container.
 
-## Windows/MacOS
-ROS can work inside docker on Windows and MacOS. Unfortunatly USB and network interfaces are not properly mapped from outside the docker container to inside the container (needed for hands on). Therefore if you are not running an Ubuntu system you will require a virtual machine.
-1. Follow the instructions on the Ubuntu website to [configure Virtualbox ](https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox#1-overview)
-2. Once your Ubuntu Virtualbox is running, follow the above steps, like if you were using Ubuntu:
-	  - install docker
-	  - clone the repository
-	  - run the check script
-2. Once you have created the ubuntu virtualbox and installed all the required software you might want to enable bridged network to comunicate with other devices on the same network. To do so go to Settings->Network and select Bridged Network on the drop-down meny for you network interface
-3. When you will start using real cameras for algorithm testing you will also want to enable the usb ports. To do so follow the [Luxonis Camera guide](https://docs.luxonis.com/software/depthai/manual-install/#Manual%20DepthAI%20installation-Installing%20dependencies-VirtualBox)
+## Windows users
+
+This whole section is dedicated to properly configure windows to connect to the Luxonis USB cameras. Follow each steps of this section, from [Enable WSL2](#enable-wsl2) to [Test USB Camera](#test-usb-camera), which you can do when you will have a real camera. 
+
+All files required for this part can be found in the windows_users
+
+### <a id="enable-wsl2"></a> Enable WSL2
+
+1. Open PowerShell as Administrator:
+   - Search for "PowerShell" in Start menu
+   - Right-click and select "Run as administrator"
+
+2. Install WSL and set WSL2 as default:
+```
+   wsl --install -d Ubuntu-22.04
+```
+   This command will:
+   - Enable Windows Subsystem for Linux
+   - Install the latest Linux kernel
+   - Set WSL2 as the default version
+   - Install Ubuntu 22.04
+
+3. Restart your computer when prompted.
+
+Note: The first installation attempt might fail. After reboot, run the command again if needed.
+
+### <a id="initial-configuration"></a> Initial Configuration
+
+1. When first launching Ubuntu, you'll be prompted to:
+   - Create a Linux username
+   - Set a password
+
+2. Update the system:
+```
+
+   sudo apt update && sudo apt upgrade -y
+```
+### <a id="kenel-update"></a> Kernel Update
+
+1. Copy the "Sources" folder containing the modified kernel to C: drive
+2. Copy the .wslconfig file to C:\Users\<your_username>
+
+For manual kernel building, refer to:
+https://github.com/dorssel/usbipd-win/wiki/WSL-support#building-your-own-wsl-2-kernel-with-additional-drivers
+
+###  <a id="docker-installation"></a> Docker Installation
+
+Follow the official Ubuntu installation guide:
+https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+
+Test the installation:
+```
+docker run hello-world
+
+```
+If you get a permission denied error:
+```
+sudo usermod -aG docker $USER
+
+```
+Then:
+1. Close WSL
+2. In PowerShell run `wsl --shutdown`
+3. Reopen WSL and try the hello-world container again
+
+### <a id="drims-container-setup"></a> DRIMS Container
+Install the container following the provided instructions.
+
+### <a id="usb-device-support"></a> USB Device Support
+
+#### Windows Installation
+
+1. Install via Windows Package Manager:
+```
+
+   winget install --interactive --exact dorssel.usbipd-win
+```
+   This installs:
+   - usbipd service (USBIP Device Host)
+   - usbipd CLI tool
+   - Firewall rule for local connections
+
+2. Verify installation:
+```
+   usbipd list
+```
+
+#### Ubuntu Installation
+
+```
+sudo apt update
+
+sudo apt install linux-tools-virtual hwdata
+sudo update-alternatives --install /usr/local/bin/usbip usbip $(command -v ls /usr/lib/linux-tools/*/usbip | tail -n1) 20
+```
+If you get a "usbipd not found for kernel" error, in PowerShell run:
+```
+wsl --shutdown
+wsl --update
+```
+#### Share Devices with WSL
+
+##### Automatic Method (Recommended)
+1. Copy attach_usb.ps1 to your PC
+2. Run in PowerShell:
+```
+   Start-Process PowerShell -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"C:\<path_to_file>\attach_usb.ps1`""
+```
+**NB: This script automatically attach the usb camera to wsl and is needed because when first plugged in, Luxonis cameras are detected as standard USB cameras and Windows assigns generic USB camera drivers.**
+**When the camera is initialized (via `depthai` or ROS2) the device _changes its USB profile_ and driver.**
+**This causes Windows to treat it as a new device and WSL loses connection to the original USB device.**
+**Without intervention, the camera becomes unavailable and requires manual USB reattachment via `usbipd` commands.**
+##### Manual Method
+1. List devices in PowerShell (Admin): `usbipd list`
+2. Bind the device: `usbipd bind --busid <busid>`
+3. Attach to WSL: `usbipd attach --wsl Ubuntu-22.04 --busid <busid>`
+4. Verify in WSL:  `lsusb`
+
+#### <a id="test-usb-camera"></a>Test USB Camera
+In Ubuntu 22, start the Docker container and run:
+```
+ros2 launch depthai_examples stereo.launch.py
+
+```
+
 
 ## VS-Code integration	
 To write your code you can use nano/vim directly inside docker.
@@ -87,6 +205,8 @@ To do this, run the following command once:
 `echo "xhost +si:localuser:$(whoami) > /dev/null 2>&1" >> ~/.bashrc`
 
 This will add the safer xhost command to your .bashrc file, ensuring it runs without displaying any output in your terminal.
+
+Nevertheless, the start script already enable gui, so if you use the provided script you don't have to set any additional variable 
 
 
 
