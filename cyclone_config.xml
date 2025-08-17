@@ -1,0 +1,31 @@
+<CycloneDDS>
+  <Domain>
+    <General>
+      <AllowMulticast>false</AllowMulticast>
+      <MaxMessageSize>1400B</MaxMessageSize>
+      <Interfaces>
+      	<!-- Note: The name="" must be set in according to ifconfig -->
+        <!-- <NetworkInterface name="enp4s0" priority="1"/> -->
+        <NetworkInterface name="lo" priority="0"/>
+      </Interfaces>
+    </General>
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+      <Peers>
+        <Peer Address="localhost"/>
+        <Peer Address="192.168.254.100"/> <!-- UR10 E 2F-->
+        <!-- <Peer Address=""/> --> <!-- Tiago pro-->
+      </Peers>
+      <MaxAutoParticipantIndex>500</MaxAutoParticipantIndex>
+    </Discovery>
+    <Internal>
+      <Watermarks>
+        <WhcHigh>2000kB</WhcHigh>
+      </Watermarks>
+    </Internal>
+    <Tracing>
+      <Verbosity>config</Verbosity>
+      <OutputFile>${HOME}/.ros/log/cdds.log</OutputFile>
+    </Tracing>
+  </Domain>
+</CycloneDDS>
