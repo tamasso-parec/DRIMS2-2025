@@ -140,4 +140,13 @@ if ! grep -Fxq "$EXPORT_LINE" "$BASHRC"; then
     echo "✅ Added export line to $BASHRC"
 fi
 
+# If the robot is Tiago, add ROS_DOMAIN_ID=2 if it's not already present
+if [ "$ROBOT" = "TIAGO robot" ]; then
+    DOMAIN_LINE='export ROS_DOMAIN_ID=2'
+    if ! grep -Fxq "$DOMAIN_LINE" "$BASHRC"; then
+        echo "$DOMAIN_LINE" >> "$BASHRC"
+        echo "✅ Added ROS_DOMAIN_ID=2 to $BASHRC"
+    fi
+fi
+
 . "$HOME/.bashrc"
