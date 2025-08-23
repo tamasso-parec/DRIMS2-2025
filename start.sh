@@ -10,8 +10,8 @@ echo "Pulling the latest image: $IMAGE_NAME..."
 docker pull $IMAGE_NAME
 
 # Grant X permissions
-xhost +si:localuser:$(whoami)
-
+#xhost +si:localuser:$(whoami)
+xhost +local:root
 # Check if the container exists
 if docker ps -a | grep -q $CONTAINER_NAME; then
     echo "Container $CONTAINER_NAME exists."

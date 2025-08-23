@@ -79,6 +79,9 @@ RUN echo "if [ -f ~/static/drims2_ws/install/setup.bash ]; then source ~/static/
 # Configure cyclone configuration to bashrc
 RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
 
+# Uselsess command to trigger image update
+RUN ls
+
 # Add the check script and setup robot connection script to the container
 COPY check_script.sh /home/$USER_NAME/check_script.sh
 COPY setup_robot_connection.sh /home/$USER_NAME/setup_robot_connection.sh
