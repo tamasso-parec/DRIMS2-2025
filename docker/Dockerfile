@@ -79,8 +79,6 @@ RUN echo "if [ -f ~/static/drims2_ws/install/setup.bash ]; then source ~/static/
 # Configure cyclone configuration to bashrc
 RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
 
-# Uselsess command to trigger image update
-RUN ls
 
 # Add the check script and setup robot connection script to the container
 COPY check_script.sh /home/$USER_NAME/check_script.sh
@@ -88,6 +86,11 @@ COPY setup_robot_connection.sh /home/$USER_NAME/setup_robot_connection.sh
 USER root
 RUN chmod +x /home/$USER_NAME/check_script.sh
 RUN chmod +x /home/$USER_NAME/setup_robot_connection.sh
+
+# Forgotten stuff
+RUN python3 -m pip install "numpy<2"
+
+
 
 WORKDIR /home/$USER_NAME
 
