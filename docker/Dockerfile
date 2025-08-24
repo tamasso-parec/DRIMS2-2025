@@ -45,6 +45,12 @@ RUN mkdir -p /home/$USER_NAME/static/drims2_ws/src
 
 WORKDIR /home/$USER_NAME/static/drims2_ws/src
 
+# installing Groot
+RUN wget https://s3.us-west-1.amazonaws.com/download.behaviortree.dev/groot2_linux_installer/Groot2-v1.6.1-linux-installer.run
+RUN chmod +x Groot2-v1.6.1-linux-installer.run
+RUN ./Groot2-v1.6.1-linux-installer.run install --root /opt/groot --accept-licenses --default-answer --confirm-command
+RUN ln -s /opt/groot/bin/groot2 /usr/local/bin/groot
+
 # Clone code as root
 RUN git clone https://github.com/CNR-STIIMA-IRAS/drims2_motion_control.git
 RUN vcs import < drims2_motion_control/dependencies.repos
@@ -89,6 +95,9 @@ RUN chmod +x /home/$USER_NAME/setup_robot_connection.sh
 
 # Forgotten stuff
 RUN python3 -m pip install "numpy<2"
+RUN echo "source /home/drims/drims_ws/install/setup.bash" >> ~/.bashrc
+RUN apt-get update && apt-get install -y ros-humble-rqt ros-humble-rqt-tf-tree
+
 
 
 
