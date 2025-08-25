@@ -1,0 +1,24 @@
+[submodule "drims_ws/src/drims2_cells"]
+	path = drims_ws/src/drims2_cells
+	url = git@github.com:CNR-STIIMA-IRAS/drims2_cells.git
+	branch = master
+[submodule "drims_ws/src/drims2_motion_control"]
+	path = drims_ws/src/drims2_motion_control
+	url = git@github.com:CNR-STIIMA-IRAS/drims2_motion_control.git
+	branch = main
+[submodule "drims_ws/src/drims2_dice_simulator"]
+	path = drims_ws/src/drims2_dice_simulator
+	url = git@github.com:CNR-STIIMA-IRAS/drims2_dice_simulator.git
+	branch = master
+[submodule "drims_ws/src/behaviortree_ros2"]
+	path = drims_ws/src/behaviortree_ros2
+	url = https://github.com/BehaviorTree/BehaviorTree.ROS2.git
+	branch = humble
+[submodule "drims_ws/src/pymoveit2"]
+	path = drims_ws/src/pymoveit2
+	url = https://github.com/CNR-STIIMA-IRAS/pymoveit2.git
+	branch = main
+[submodule "drims_ws/src/drims2_homework"]
+	path = drims_ws/src/drims2_homework
+	url = git@github.com:tamasso-parec/drims2_homework.git
+	branch = main
