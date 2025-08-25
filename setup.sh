@@ -37,4 +37,6 @@ fi
 echo "Changing group ownership of directories drims_ws and bags to $GROUP_NAME..."
 sudo chgrp -R $GROUP_NAME "$PWD/drims_ws" "$PWD/bags"
 
+sudo chmod 777 "$PWD/drims_ws" "$PWD/bags"
+
 echo "Script execution completed."
