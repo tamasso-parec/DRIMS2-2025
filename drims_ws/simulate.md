@@ -12,3 +12,13 @@ ros2 launch drims2_dice_simulator spawn_dice.launch.py face_up:='5' position:='[
 ```bash
 ros2 launch drims2_homework demo_node_start.launch.py
 ```
+### Terminal 4
+```bash
+ros2 launch depthai_examples stereo.launch.py
+```
+
+
+### Record Bag
+```bash
+ros2 bag record -o  bags/<bag-name> -a
+```

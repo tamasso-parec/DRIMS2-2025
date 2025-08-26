@@ -1,10 +1,16 @@
+# Clone the project
 
+```bash
+git clone --recurse-submodules git@github.com:tamasso-parec/DRIMS2-2025.git
+```
 
 # DRIMS2 Docker Image
 
 This repository contains the Dockerfiles to build the Docker image for the DRIMS2 summer school together with a set of scripts to start the container and check the installation.
 
 The first part of the guide assume you are working on some version of Linux (**highly recommended**), if you are on windows go to the end of this guide, follow the Windows instructions 
+
+
 
 ## How to Get Ready for DRIMS2 Summer School
 
