@@ -14,7 +14,7 @@ ros2 launch drims2_homework demo_node_start.launch.py
 ```
 ### Terminal 4
 ```bash
-ros2 launch depthai_examples stereo.launch.py
+ros2 launch depthai_examples rgb_stereo_node.launch.py
 ```
 
 
