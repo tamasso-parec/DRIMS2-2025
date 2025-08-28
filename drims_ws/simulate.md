@@ -16,6 +16,11 @@ ros2 launch drims2_homework demo_node_start.launch.py
 ```bash
 ros2 launch depthai_examples rgb_stereo_node.launch.py
 ```
+### Terminal 5
+Service: 
+```bash
+ros2 service call /dice_identification drims2_msgs/DiceIdentification
+```
 
 
 ### Record Bag
