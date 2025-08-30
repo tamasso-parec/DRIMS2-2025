@@ -27,3 +27,22 @@ ros2 service call /dice_identification drims2_msgs/DiceIdentification
 ```bash
 ros2 bag record -o  bags/<bag-name> -a
 ```
+
+
+ros2 action send_goal /move_to_pose drims2_msgs/action/MoveToPose "pose_target:
+  header:
+    stamp:
+      sec: 0
+      nanosec: 0
+    frame_id: 'checkerboard'
+  pose:
+    position:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+cartesian_motion: false"
